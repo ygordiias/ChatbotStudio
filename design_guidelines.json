@@ -1,0 +1,158 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project": {
+    "name": "TECNO DIAS Manager",
+    "type": "SaaS Dashboard / Quote Builder",
+    "context": "Home Automation & Security",
+    "audience": "Technicians & Business Owners"
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Chivo",
+      "body": "Inter",
+      "mono": "JetBrains Mono"
+    },
+    "weights": {
+      "heading": "700",
+      "body": "400",
+      "bold": "600"
+    },
+    "sizes": {
+      "h1": "text-4xl md:text-5xl tracking-tight",
+      "h2": "text-3xl tracking-tight",
+      "h3": "text-2xl font-semibold",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm text-muted-foreground"
+    },
+    "instructions": "Import fonts from Google Fonts in index.html or CSS. Use Chivo for all headings to give a tech/industrial feel. Use JetBrains Mono for all pricing, SKUs, and technical data."
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Tech Cyan",
+        "tailwind": "cyan-500",
+        "hex": "#06b6d4",
+        "usage": "Primary buttons, active states, key highlights"
+      },
+      "secondary": {
+        "name": "Slate",
+        "tailwind": "slate-800",
+        "hex": "#1e293b",
+        "usage": "Secondary buttons, card backgrounds in dark mode"
+      },
+      "background_light": {
+        "name": "Paper White",
+        "tailwind": "slate-50",
+        "hex": "#f8fafc",
+        "usage": "App background in light mode"
+      },
+      "background_dark": {
+        "name": "Void Slate",
+        "tailwind": "slate-950",
+        "hex": "#020617",
+        "usage": "App background in dark mode"
+      },
+      "alert": {
+        "name": "Margin Alert Red",
+        "tailwind": "red-500",
+        "hex": "#ef4444",
+        "usage": "Margins < 20%, Error states"
+      },
+      "success": {
+        "name": "Profit Green",
+        "tailwind": "emerald-500",
+        "hex": "#10b981",
+        "usage": "Margins > 30%, Success states"
+      }
+    },
+    "theme_strategy": {
+      "light": "Swiss High-Contrast. White backgrounds, stark black text, Cyan accents. Best for PDF generation and office use.",
+      "dark": "Control Room. Deep Slate backgrounds, glowing Cyan accents. Best for field work and low-light environments."
+    }
+  },
+  "layout": {
+    "spacing": {
+      "base": "Use 2-3x more spacing than typical. Minimum padding p-6 for cards.",
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    },
+    "grid_system": {
+      "dashboard": "Bento Grid (Mode B). Dense, data-heavy. Use grid-cols-1 md:grid-cols-4 gap-6.",
+      "quote_builder": "Split View. Left: Client/Settings (1 col). Right: Items/Calcs (2 cols). Sticky summary footer on mobile."
+    },
+    "z_index": {
+      "toast": 50,
+      "modal": 40,
+      "dropdown": 30,
+      "sticky_header": 20,
+      "base": 0
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "Glassmorphism in Dark Mode (bg-slate-900/80 backdrop-blur-md border-slate-800). Solid Border in Light Mode (bg-white border-slate-200 shadow-sm).",
+      "radius": "rounded-xl"
+    },
+    "buttons": {
+      "primary": "bg-cyan-500 hover:bg-cyan-600 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02]",
+      "secondary": "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700",
+      "ghost": "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+    },
+    "inputs": {
+      "style": "h-12 bg-transparent border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-cyan-500 rounded-lg",
+      "labels": "text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block"
+    },
+    "tables": {
+      "style": "w-full text-sm text-left",
+      "header": "bg-slate-50 dark:bg-slate-900/50 text-slate-500 uppercase tracking-wider font-medium py-3 px-4",
+      "row": "border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-white/70 dark:bg-slate-950/70 border border-white/20",
+    "tracing_beam": "Use for active quote sections. A subtle glowing border that follows focus.",
+    "gradients": "NO full screen gradients. Use subtle radial gradients for 'glow' effects behind charts or key metrics in dark mode."
+  },
+  "images": {
+    "login_bg": {
+      "url": "https://images.unsplash.com/photo-1631375937044-6dd5beac01d2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHw0fHxzbWFydCUyMGhvbWUlMjBhdXRvbWF0aW9uJTIwdGVjaG5vbG9neSUyMHNlY3VyaXR5JTIwY2FtZXJhJTIwbGVucyUyMGNsb3NlJTIwdXAlMjBlbGVjdHJpYyUyMGdhdGUlMjBtb3RvciUyMGFic3RyYWN0JTIwbW9kZXJuJTIwY2lyY3VpdCUyMGJvYXJkJTIwYmx1ZSUyMGxpZ2h0fGVufDB8fHx8MTc2NDk0MjM4MHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Tech Circuit Background",
+      "usage": "Login screen background with heavy dark overlay (bg-slate-950/90)"
+    },
+    "logo": {
+      "placeholder": "Use a text-based logo 'TECNO DIAS' with 'TECNO' in Slate-900 (Dark: White) and 'DIAS' in Cyan-500. Font: Chivo Black.",
+      "usage": "Header, Sidebar, PDF Top-Left"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-out",
+    "hover": "hover:-translate-y-0.5 hover:shadow-md",
+    "list_entrance": "Staggered fade-in for dashboard cards and list items."
+  },
+  "accessibility": {
+    "contrast": "Ensure text on Cyan-500 is White. Ensure text on Slate-900 is Slate-50.",
+    "focus": "Visible focus rings (ring-2 ring-cyan-500 ring-offset-2) for all interactive elements.",
+    "testing": "All interactive elements MUST have data-testid attributes."
+  },
+  "universal_guidelines": [
+    "Do not use generic centered layouts.",
+    "Create depth through layered design elements.",
+    "Use glass-morphism effects with backdrop filters.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Subtle grain textures and noise overlays separate good from extraordinary.",
+    "Use 'sonner' for toasts.",
+    "Components MUST use named exports.",
+    "Pages MUST use default exports."
+  ]
+}
