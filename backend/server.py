@@ -123,6 +123,7 @@ class OrcamentoCreate(BaseModel):
 class OrcamentoUpdate(BaseModel):
     cliente: Optional[ClienteInfo] = None
     items: Optional[List[OrcamentoItem]] = None
+    mao_de_obra: Optional[float] = None
     desconto_aplicado: Optional[float] = None
     status: Optional[str] = None
     observacoes: Optional[str] = None
