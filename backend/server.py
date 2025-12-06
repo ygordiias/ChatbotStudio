@@ -439,7 +439,7 @@ async def get_dashboard_charts(current_user: User = Depends(get_current_user)):
         items_mais_vendidos=items_mais_vendidos
     )
 
-# ===== PDF GENERATION =====
+# ===== PDF GENERATION (CLEAN & PROFESSIONAL - 1 PAGE A4) =====
 @api_router.get("/orcamentos/{id_orcamento}/pdf")
 async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_current_user)):
     orcamento = await db.orcamentos.find_one({"id_orcamento": id_orcamento}, {"_id": 0})
