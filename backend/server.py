@@ -302,7 +302,8 @@ async def create_orcamento(orc_data: OrcamentoCreate, current_user: User = Depen
     id_orcamento = f"ORC-{ano}-{new_num:04d}"
     
     total_sem_desconto = sum(item.total_item for item in orc_data.items)
-    total_final = total_sem_desconto - orc_data.desconto_aplicado
+    total_com_mao_obra = total_sem_desconto + orc_data.mao_de_obra
+    total_final = total_com_mao_obra - orc_data.desconto_aplicado
     
     orcamento = Orcamento(
         id_orcamento=id_orcamento,
@@ -310,6 +311,7 @@ async def create_orcamento(orc_data: OrcamentoCreate, current_user: User = Depen
         data=now.strftime("%d/%m/%Y"),
         items=orc_data.items,
         total_sem_desconto=round(total_sem_desconto, 2),
+        mao_de_obra=round(orc_data.mao_de_obra, 2),
         desconto_aplicado=round(orc_data.desconto_aplicado, 2),
         total_final=round(total_final, 2),
         status="Pendente",
