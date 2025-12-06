@@ -261,11 +261,34 @@ export default function OrcamentoForm() {
             
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Subtotal</span>
+                <span className="text-slate-500 dark:text-slate-400">Subtotal Itens</span>
                 <span className="font-mono text-slate-900 dark:text-white">
                   R$ {subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mao_de_obra">Mão de Obra (R$)</Label>
+                <Input
+                  id="mao_de_obra"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.mao_de_obra}
+                  onChange={(e) => setFormData({ ...formData, mao_de_obra: parseFloat(e.target.value) || 0 })}
+                  data-testid="mao-de-obra-input"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {formData.mao_de_obra > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500 dark:text-slate-400">Subtotal com Mão de Obra</span>
+                  <span className="font-mono text-slate-900 dark:text-white">
+                    R$ {subtotalComMaoObra.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="desconto">Desconto (R$)</Label>
@@ -273,9 +296,11 @@ export default function OrcamentoForm() {
                   id="desconto"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.desconto_aplicado}
                   onChange={(e) => setFormData({ ...formData, desconto_aplicado: parseFloat(e.target.value) || 0 })}
                   data-testid="desconto-input"
+                  placeholder="0.00"
                 />
               </div>
 
