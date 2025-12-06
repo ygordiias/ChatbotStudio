@@ -325,6 +325,9 @@ async def create_orcamento(orc_data: OrcamentoCreate, current_user: User = Depen
         desconto_aplicado=round(orc_data.desconto_aplicado, 2),
         total_final=round(total_final, 2),
         status="Pendente",
+        descricao_servico=orc_data.descricao_servico or "",
+        prazo_execucao=orc_data.prazo_execucao or "15 dias",
+        forma_pagamento=orc_data.forma_pagamento or "Entrada + Parcelamento",
         observacoes=orc_data.observacoes or "",
         created_at=now.isoformat()
     )
