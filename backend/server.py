@@ -894,7 +894,7 @@ async def generate_laudo_pdf(id_laudo: str, current_user: User = Depends(get_cur
     EMPRESA_CNPJ = "58.691.507/0001-19"
     EMPRESA_EMAIL = "tecnodiasct@hotmail.com"
     EMPRESA_ENDERECO = "Rua José Mário Gonçalves – São Carlos – SP"
-    EMPRESA_WHATSAPP = "(16) 99740-2458"
+    EMPRESA_WHATSAPP = "(16) 99442-8369"
     
     buffer = BytesIO()
     doc = SimpleDocTemplate(
