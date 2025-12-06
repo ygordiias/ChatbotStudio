@@ -27,6 +27,7 @@ export default function OrcamentoForm() {
   const [formData, setFormData] = useState({
     cliente: { nome: '', endereco: '', contato: '' },
     items: [],
+    mao_de_obra: 0,
     desconto_aplicado: 0,
     observacoes: ''
   });
