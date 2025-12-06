@@ -18,35 +18,33 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <div id="app-root">
-            <Toaster 
-              position="top-right" 
-              richColors
-              closeButton
+          <Toaster 
+            position="top-right" 
+            richColors
+            closeButton
+          />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/items" element={<Items />} />
+                      <Route path="/orcamentos" element={<Orcamentos />} />
+                      <Route path="/orcamentos/new" element={<OrcamentoForm />} />
+                      <Route path="/orcamentos/:id" element={<OrcamentoDetail />} />
+                      <Route path="/orcamentos/:id/edit" element={<OrcamentoForm />} />
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
+              }
             />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/items" element={<Items />} />
-                        <Route path="/orcamentos" element={<Orcamentos />} />
-                        <Route path="/orcamentos/new" element={<OrcamentoForm />} />
-                        <Route path="/orcamentos/:id" element={<OrcamentoDetail />} />
-                        <Route path="/orcamentos/:id/edit" element={<OrcamentoForm />} />
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      </Routes>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </div>
+          </Routes>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
