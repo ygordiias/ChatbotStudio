@@ -58,6 +58,7 @@ export default function OrcamentoForm() {
       setFormData({
         cliente: response.data.cliente,
         items: response.data.items,
+        mao_de_obra: response.data.mao_de_obra || 0,
         desconto_aplicado: response.data.desconto_aplicado,
         observacoes: response.data.observacoes || ''
       });
