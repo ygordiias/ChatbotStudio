@@ -447,160 +447,186 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
         raise HTTPException(status_code=404, detail="Orçamento não encontrado")
     
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    # Margens otimizadas para caber tudo em 1 página
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=A4, 
+        topMargin=0.4*inch, 
+        bottomMargin=0.4*inch,
+        leftMargin=0.6*inch,
+        rightMargin=0.6*inch
+    )
     story = []
     styles = getSampleStyleSheet()
     
-    # Custom styles
+    # Estilos limpos e profissionais
     title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#06b6d4'),
+        'Title',
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        textColor=colors.black,
+        alignment=TA_CENTER,
+        spaceAfter=6
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'Subtitle',
+        fontName='Helvetica',
+        fontSize=10,
+        textColor=colors.grey,
         alignment=TA_CENTER,
         spaceAfter=12
     )
     
-    subtitle_style = ParagraphStyle(
-        'CustomSubtitle',
-        parent=styles['Normal'],
-        fontSize=10,
-        textColor=colors.HexColor('#475569'),
-        alignment=TA_CENTER,
-        spaceAfter=20
+    normal_bold = ParagraphStyle(
+        'NormalBold',
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        textColor=colors.black
     )
     
-    # Logo
+    # Logo (menor para economizar espaço)
     try:
         logo_url = 'https://customer-assets.emergentagent.com/job_6a1d4806-8932-4f80-b5f2-32162d8861f2/artifacts/p3cmz4m7_empresa%20%27Tecno%20Dias%27.jpg'
         logo_data = urlopen(logo_url).read()
         logo_img = Image.open(BytesIO(logo_data))
         logo_width, logo_height = logo_img.size
         aspect = logo_height / logo_width
-        logo = RLImage(BytesIO(logo_data), width=2*inch, height=2*inch*aspect)
+        logo = RLImage(BytesIO(logo_data), width=1.2*inch, height=1.2*inch*aspect)
         story.append(logo)
+        story.append(Spacer(1, 0.1*inch))
     except:
         pass
     
-    story.append(Spacer(1, 0.2*inch))
-    
-    # Title
+    # Título
     story.append(Paragraph("ORÇAMENTO", title_style))
-    story.append(Paragraph(f"Nº {id_orcamento}", subtitle_style))
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(f"Nº {id_orcamento} - Data: {orcamento['data']}", subtitle_style))
     
-    # Client info
+    # Dados do cliente (compacto)
     client_data = [
-        ['<b>Cliente:</b>', orcamento['cliente']['nome']],
-        ['<b>Endereço:</b>', orcamento['cliente']['endereco']],
-        ['<b>Contato:</b>', orcamento['cliente']['contato']],
-        ['<b>Data:</b>', orcamento['data']]
+        ['<b>Cliente:</b>', orcamento['cliente']['nome'], '<b>Contato:</b>', orcamento['cliente']['contato']],
+        ['<b>Endereço:</b>', Paragraph(orcamento['cliente']['endereco'], styles['Normal']), '', '']
     ]
     
-    client_table = Table(client_data, colWidths=[1.5*inch, 4.5*inch])
+    client_table = Table(client_data, colWidths=[1*inch, 2.3*inch, 0.9*inch, 2*inch])
     client_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#1e293b')),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('SPAN', (1, 1), (3, 1)),  # Endereço ocupa 3 colunas
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]))
     story.append(client_table)
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Spacer(1, 0.15*inch))
     
-    # Items table
-    items_data = [['Item', 'Qtd', 'Preço Unit.', 'Total']]
+    # Tabela de itens (compacta)
+    items_data = [['Item', 'Qtd', 'Preço Un.', 'Total']]
     for item in orcamento['items']:
         items_data.append([
-            item['nome'],
+            Paragraph(item['nome'], ParagraphStyle('ItemName', fontName='Helvetica', fontSize=8)),
             str(item['quantidade']),
             f"R$ {item['preco_unitario']:.2f}",
             f"R$ {item['total_item']:.2f}"
         ])
     
-    items_table = Table(items_data, colWidths=[3*inch, 0.8*inch, 1.2*inch, 1.2*inch])
+    items_table = Table(items_data, colWidths=[3.3*inch, 0.5*inch, 1*inch, 1*inch])
     items_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#06b6d4')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#333333')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0')),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 9),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ]))
     story.append(items_table)
-    story.append(Spacer(1, 0.2*inch))
+    story.append(Spacer(1, 0.1*inch))
     
-    # Totals
+    # Totais (compacto e alinhado à direita)
     totals_data = []
-    if orcamento['desconto_aplicado'] > 0:
-        totals_data.append(['Subtotal:', f"R$ {orcamento['total_sem_desconto']:.2f}"])
+    totals_data.append(['Subtotal Itens:', f"R$ {orcamento['total_sem_desconto']:.2f}"])
+    
+    if orcamento.get('mao_de_obra', 0) > 0:
+        totals_data.append(['Mão de Obra:', f"R$ {orcamento['mao_de_obra']:.2f}"])
+    
+    if orcamento.get('desconto_aplicado', 0) > 0:
         totals_data.append(['Desconto:', f"- R$ {orcamento['desconto_aplicado']:.2f}"])
+    
     totals_data.append(['<b>TOTAL:</b>', f"<b>R$ {orcamento['total_final']:.2f}</b>"])
     
-    totals_table = Table(totals_data, colWidths=[4.8*inch, 1.4*inch])
+    totals_table = Table(totals_data, colWidths=[4.9*inch, 0.9*inch])
     totals_table.setStyle(TableStyle([
-        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, -2), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('FONTSIZE', (0, 0), (-1, -2), 8),
         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, -1), (-1, -1), 12),
-        ('TEXTCOLOR', (0, -1), (-1, -1), colors.HexColor('#06b6d4')),
-        ('TOPPADDING', (0, -1), (-1, -1), 8),
+        ('FONTSIZE', (0, -1), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
     ]))
     story.append(totals_table)
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Spacer(1, 0.15*inch))
     
-    # QR Code PIX
-    pix_key = "586915070001-19"
-    pix_nome = "Ygor Felipe Dias"
-    pix_cidade = "São Carlos"
-    pix_value = orcamento['total_final']
-    
-    pix_text = f"PIX: {pix_key}\nBeneficiário: {pix_nome}\nValor: R$ {pix_value:.2f}"
-    
-    qr = qrcode.QRCode(version=1, box_size=4, border=2)
-    qr.add_data(pix_text)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="black", back_color="white")
-    
-    qr_buffer = BytesIO()
-    qr_img.save(qr_buffer, format='PNG')
-    qr_buffer.seek(0)
-    
-    qr_image = RLImage(qr_buffer, width=1.5*inch, height=1.5*inch)
-    
-    pix_data = [[
-        Paragraph('<b>Pagamento via PIX</b><br/>' + pix_text.replace('\n', '<br/>'), styles['Normal']),
-        qr_image
-    ]]
-    
-    pix_table = Table(pix_data, colWidths=[4*inch, 2*inch])
-    pix_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f1f5f9')),
-        ('LEFTPADDING', (0, 0), (0, 0), 10),
-    ]))
-    story.append(pix_table)
-    story.append(Spacer(1, 0.3*inch))
-    
-    # Observações
-    obs_text = "<b>Observações:</b><br/>" + (
-        "• Validade: 30 dias<br/>" +
-        "• Garantia: 90 dias<br/>" +
-        "• Preços sujeitos a alteração conforme disponibilidade de materiais<br/>" +
-        "• Atendimento rápido<br/>" +
-        "• Suporte pós-venda"
+    # Dados PIX (SEM QR CODE - apenas texto limpo)
+    pix_info = ParagraphStyle(
+        'PixInfo',
+        fontName='Helvetica',
+        fontSize=8,
+        textColor=colors.black,
+        leading=10
     )
+    
+    pix_text = f"<b>PAGAMENTO VIA PIX:</b><br/>" \
+               f"Chave PIX: 586915070001-19<br/>" \
+               f"Beneficiário: Ygor Felipe Dias | Cidade: São Carlos<br/>" \
+               f"Valor: R$ {orcamento['total_final']:.2f}"
+    
+    pix_box = Table([[Paragraph(pix_text, pix_info)]], colWidths=[5.8*inch])
+    pix_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9f9f9')),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    story.append(pix_box)
+    story.append(Spacer(1, 0.1*inch))
+    
+    # Observações (compactas)
+    obs_style = ParagraphStyle(
+        'Obs',
+        fontName='Helvetica',
+        fontSize=7,
+        textColor=colors.grey,
+        leading=9
+    )
+    
+    obs_text = "<b>OBSERVAÇÕES:</b> " \
+               "Validade: 30 dias | Garantia: 90 dias | " \
+               "Preços sujeitos a alteração | Atendimento rápido | Suporte pós-venda"
+    
     if orcamento.get('observacoes'):
-        obs_text += "<br/><br/>" + orcamento['observacoes']
+        # Limitar observações customizadas a 200 caracteres para caber na página
+        custom_obs = orcamento['observacoes'][:200]
+        if len(orcamento['observacoes']) > 200:
+            custom_obs += "..."
+        obs_text += "<br/>" + custom_obs
     
-    story.append(Paragraph(obs_text, styles['Normal']))
+    story.append(Paragraph(obs_text, obs_style))
     
+    # Construir PDF
     doc.build(story)
     buffer.seek(0)
     
