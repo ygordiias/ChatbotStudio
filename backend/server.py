@@ -106,6 +106,7 @@ class Orcamento(BaseModel):
     data: str
     items: List[OrcamentoItem]
     total_sem_desconto: float
+    mao_de_obra: float = 0.0
     desconto_aplicado: float = 0.0
     total_final: float
     status: str = "Pendente"
@@ -115,6 +116,7 @@ class Orcamento(BaseModel):
 class OrcamentoCreate(BaseModel):
     cliente: ClienteInfo
     items: List[OrcamentoItem]
+    mao_de_obra: float = 0.0
     desconto_aplicado: float = 0.0
     observacoes: Optional[str] = ""
 
