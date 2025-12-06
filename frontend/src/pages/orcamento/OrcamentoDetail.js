@@ -193,11 +193,20 @@ export default function OrcamentoDetail() {
             
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Subtotal</span>
+                <span className="text-slate-500 dark:text-slate-400">Subtotal Itens</span>
                 <span className="font-mono text-slate-900 dark:text-white">
                   R$ {orcamento.total_sem_desconto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
+
+              {orcamento.mao_de_obra > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500 dark:text-slate-400">Mão de Obra</span>
+                  <span className="font-mono text-slate-900 dark:text-white">
+                    R$ {orcamento.mao_de_obra.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
 
               {orcamento.desconto_aplicado > 0 && (
                 <div className="flex justify-between text-sm">
