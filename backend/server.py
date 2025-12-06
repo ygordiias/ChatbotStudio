@@ -132,6 +132,9 @@ class OrcamentoUpdate(BaseModel):
     mao_de_obra: Optional[float] = None
     desconto_aplicado: Optional[float] = None
     status: Optional[str] = None
+    descricao_servico: Optional[str] = None
+    prazo_execucao: Optional[str] = None
+    forma_pagamento: Optional[str] = None
     observacoes: Optional[str] = None
 
 class StatusUpdate(BaseModel):
