@@ -131,7 +131,7 @@ export default function OrcamentoForm() {
     return { subtotal, subtotalComMaoObra, total, margem, margemComDesconto };
   };
 
-  const { subtotal, total, margem, margemComDesconto } = calculateTotals();
+  const { subtotal, subtotalComMaoObra, total, margem, margemComDesconto } = calculateTotals();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
