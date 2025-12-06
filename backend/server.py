@@ -524,16 +524,17 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(title_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # ===== BLOCO COM DADOS =====
-    info_style = ParagraphStyle('Info', fontName='Helvetica', fontSize=9, leading=11)
-    
+    # ===== BLOCO COM DADOS (SEM HTML) =====
     # Número e data
     info_data = [
-        ['<b>Número do Orçamento:</b>', id_orcamento, '<b>Data de Emissão:</b>', orcamento['data']]
+        ['Número do Orçamento:', id_orcamento, 'Data de Emissão:', orcamento['data']]
     ]
     info_table = Table(info_data, colWidths=[1.5*inch, 1.8*inch, 1.5*inch, 1.2*inch])
     info_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, 0), 'Helvetica'),
+        ('FONTNAME', (2, 0), (2, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (3, 0), (3, 0), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, -1), 4),
@@ -544,13 +545,14 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     
     # Dados do cliente
     cliente_data = [
-        ['<b>Cliente:</b>', orcamento['cliente']['nome']],
-        ['<b>Endereço:</b>', orcamento['cliente']['endereco']],
-        ['<b>Telefone:</b>', orcamento['cliente']['contato']],
+        ['Cliente:', orcamento['cliente']['nome']],
+        ['Endereço:', orcamento['cliente']['endereco']],
+        ['Telefone:', orcamento['cliente']['contato']],
     ]
     cliente_table = Table(cliente_data, colWidths=[1*inch, 5*inch])
     cliente_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 4),
@@ -560,17 +562,16 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(cliente_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # Descrição do serviço (centralizada)
+    # Descrição do serviço (centralizada, SEM HTML)
     if orcamento.get('descricao_servico'):
-        desc_style = ParagraphStyle(
-            'Descricao',
-            fontName='Helvetica',
-            fontSize=9,
-            textColor=colors.black,
-            alignment=TA_CENTER,
-            leading=11
-        )
-        story.append(Paragraph(f"<b>Descrição do Serviço:</b> {orcamento['descricao_servico']}", desc_style))
+        desc_data = [[f"Descrição do Serviço: {orcamento['descricao_servico']}"]]
+        desc_table = Table(desc_data, colWidths=[6*inch])
+        desc_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ]))
+        story.append(desc_table)
         story.append(Spacer(1, 0.1*inch))
     
     # ===== TABELA DE MATERIAIS =====
