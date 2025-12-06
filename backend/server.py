@@ -495,19 +495,21 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     except:
         pass
     
-    # Dados da empresa centralizados
-    empresa_style = ParagraphStyle(
-        'Empresa',
-        fontName='Helvetica',
-        fontSize=8,
-        textColor=colors.black,
-        alignment=TA_CENTER,
-        leading=10
-    )
-    
-    empresa_info = f"CNPJ: {EMPRESA_CNPJ} | E-mail: {EMPRESA_EMAIL}<br/>" \
-                   f"{EMPRESA_ENDERECO} | WhatsApp: {EMPRESA_WHATSAPP}"
-    story.append(Paragraph(empresa_info, empresa_style))
+    # Dados da empresa centralizados (SEM HTML)
+    empresa_data = [
+        [f"CNPJ: {EMPRESA_CNPJ} | E-mail: {EMPRESA_EMAIL}"],
+        [f"{EMPRESA_ENDERECO} | WhatsApp: {EMPRESA_WHATSAPP}"]
+    ]
+    empresa_table = Table(empresa_data, colWidths=[7*inch])
+    empresa_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    story.append(empresa_table)
     story.append(Spacer(1, 0.1*inch))
     
     # Título ORÇAMENTO TECNO DIAS
