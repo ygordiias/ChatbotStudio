@@ -649,7 +649,7 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
         story.append(mao_obra_table)
         story.append(Spacer(1, 0.1*inch))
     
-    # ===== RESUMO GERAL =====
+    # ===== RESUMO GERAL (SEM HTML) =====
     resumo_data = []
     resumo_data.append(['Subtotal Materiais:', f"R$ {orcamento['total_sem_desconto']:.2f}"])
     
@@ -659,17 +659,18 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     if orcamento.get('desconto_aplicado', 0) > 0:
         resumo_data.append(['Desconto:', f"- R$ {orcamento['desconto_aplicado']:.2f}"])
     
-    # Total em AZUL, NEGRITO e MAIOR
-    total_style_text = f'<font color="#0066cc" size="14"><b>R$ {orcamento["total_final"]:.2f}</b></font>'
-    resumo_data.append(['<b>TOTAL:</b>', total_style_text])
+    # Total em AZUL, NEGRITO e MAIOR (SEM usar HTML - usar TableStyle)
+    resumo_data.append(['TOTAL:', f"R$ {orcamento['total_final']:.2f}"])
     
     resumo_table = Table(resumo_data, colWidths=[5*inch, 1*inch])
     resumo_table.setStyle(TableStyle([
         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, -2), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -2), 9),
-        ('FONTNAME', (0, -1), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, -1), (0, -1), 10),
+        # Linha TOTAL: fonte maior, azul, negrito
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, -1), (-1, -1), 14),
+        ('TEXTCOLOR', (0, -1), (-1, -1), colors.HexColor('#0066cc')),
         ('TOPPADDING', (0, 0), (-1, -1), 3),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ('LINEABOVE', (0, -1), (-1, -1), 1.5, colors.black),
