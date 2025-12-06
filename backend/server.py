@@ -110,6 +110,9 @@ class Orcamento(BaseModel):
     desconto_aplicado: float = 0.0
     total_final: float
     status: str = "Pendente"
+    descricao_servico: Optional[str] = ""
+    prazo_execucao: Optional[str] = "15 dias"
+    forma_pagamento: Optional[str] = "Entrada + Parcelamento"
     observacoes: Optional[str] = ""
     created_at: str
 
