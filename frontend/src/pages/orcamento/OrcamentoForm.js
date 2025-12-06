@@ -326,8 +326,8 @@ export default function OrcamentoForm() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Itens do Orçamento</h3>
               
-              <Popover open={itemPopoverOpen} onOpenChange={setItemPopoverOpen}>
-                <PopoverTrigger asChild>
+              <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
+                <DialogTrigger asChild>
                   <Button 
                     type="button"
                     data-testid="add-item-button"
@@ -336,66 +336,95 @@ export default function OrcamentoForm() {
                     <Plus size={16} className="mr-2" />
                     Adicionar Item
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="end">
-                  <Command>
-                    <CommandInput placeholder="Buscar item..." />
-                    <CommandList>
-                      <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                      <CommandGroup>
-                        {allItems.map((item) => (
-                          <CommandItem
-                            key={item.id}
-                            value={item.nome}
-                            onSelect={() => setSelectedItemForAdd(item)}
-                            className="flex justify-between"
-                          >
-                            <span>{item.nome}</span>
-                            <span className="text-xs text-slate-500 font-mono">
-                              R$ {item.preco_venda.toFixed(2)}
-                            </span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Item</DialogTitle>
+                    <DialogDescription>
+                      Selecione um item e defina a quantidade
+                    </DialogDescription>
+                  </DialogHeader>
                   
-                  {selectedItemForAdd && (
-                    <div className="p-4 border-t">
-                      <div className="space-y-3">
-                        <div>
-                          <div className="text-sm font-medium text-slate-900 dark:text-white">
-                            {selectedItemForAdd.nome}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
-                            R$ {selectedItemForAdd.preco_venda.toFixed(2)} / un
-                          </div>
-                        </div>
-                        <div className="flex items-end space-x-2">
-                          <div className="flex-1">
-                            <Label htmlFor="qty" className="text-xs">Quantidade</Label>
-                            <Input
-                              id="qty"
-                              type="number"
-                              min="1"
-                              value={quantity}
-                              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                              className="h-9"
-                            />
-                          </div>
-                          <Button 
-                            type="button" 
-                            onClick={handleAddItem}
-                            className="bg-cyan-500 hover:bg-cyan-600 h-9"
+                  <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+                    <Input
+                      placeholder="Buscar item..."
+                      value={itemSearch}
+                      onChange={(e) => setItemSearch(e.target.value)}
+                      className="w-full"
+                    />
+                    
+                    <div className="flex-1 overflow-y-auto space-y-2">
+                      {allItems
+                        .filter(item => item.nome.toLowerCase().includes(itemSearch.toLowerCase()))
+                        .map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => setSelectedItemForAdd(item)}
+                            className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                              selectedItemForAdd?.id === item.id
+                                ? 'border-cyan-500 bg-cyan-500/10'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-cyan-500/50'
+                            }`}
                           >
-                            Adicionar
-                          </Button>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-slate-900 dark:text-white">
+                                  {item.nome}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">
+                                  {item.categoria === 'material' ? 'Material' : 'Serviço'}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-semibold text-slate-900 dark:text-white">
+                                  R$ {item.preco_venda.toFixed(2)}
+                                </div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">
+                                  Margem: {item.margem.toFixed(1)}%
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                    
+                    {selectedItemForAdd && (
+                      <div className="border-t pt-4">
+                        <div className="space-y-3">
+                          <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">
+                              {selectedItemForAdd.nome}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              R$ {selectedItemForAdd.preco_venda.toFixed(2)} / unidade
+                            </div>
+                          </div>
+                          <div className="flex items-end space-x-2">
+                            <div className="flex-1">
+                              <Label htmlFor="qty">Quantidade</Label>
+                              <Input
+                                id="qty"
+                                type="number"
+                                min="1"
+                                value={quantity}
+                                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                              />
+                            </div>
+                            <Button 
+                              type="button" 
+                              onClick={handleAddItem}
+                              className="bg-cyan-500 hover:bg-cyan-600"
+                            >
+                              <Plus size={16} className="mr-2" />
+                              Adicionar
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Items List */}
