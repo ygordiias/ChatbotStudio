@@ -678,14 +678,23 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(resumo_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # ===== FORMA DE PAGAMENTO =====
-    pagamento_style = ParagraphStyle('Pagamento', fontName='Helvetica', fontSize=9, leading=11)
+    # ===== FORMA DE PAGAMENTO (SEM HTML, SEM VALOR PIX) =====
     forma_pagamento = orcamento.get('forma_pagamento', 'Entrada + Parcelamento')
-    story.append(Paragraph(f"<b>Forma de Pagamento:</b> {forma_pagamento}", pagamento_style))
-    story.append(Spacer(1, 0.05*inch))
-    
-    # PIX (somente texto, sem QR Code)
-    story.append(Paragraph(f"<b>PIX:</b> Chave: 586915070001-19 | Beneficiário: Ygor Felipe Dias | Valor: R$ {orcamento['total_final']:.2f}", pagamento_style))
+    pagamento_data = [
+        ['Forma de Pagamento:', forma_pagamento],
+        ['PIX:', 'Chave: 586915070001-19 | Beneficiário: Ygor Felipe Dias']
+    ]
+    pagamento_table = Table(pagamento_data, colWidths=[1.5*inch, 4.5*inch])
+    pagamento_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    story.append(pagamento_table)
     story.append(Spacer(1, 0.1*inch))
     
     # ===== PRAZO DE EXECUÇÃO =====
