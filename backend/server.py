@@ -465,101 +465,136 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     EMPRESA_WHATSAPP = "(16) 99999-9999"
     
     buffer = BytesIO()
-    # Margens otimizadas para caber tudo em 1 página
     doc = SimpleDocTemplate(
         buffer, 
         pagesize=A4, 
-        topMargin=0.4*inch, 
-        bottomMargin=0.4*inch,
-        leftMargin=0.6*inch,
-        rightMargin=0.6*inch
+        topMargin=0.3*inch, 
+        bottomMargin=0.3*inch,
+        leftMargin=0.5*inch,
+        rightMargin=0.5*inch
     )
     story = []
-    styles = getSampleStyleSheet()
     
-    # Estilos limpos e profissionais
-    title_style = ParagraphStyle(
-        'Title',
-        fontName='Helvetica-Bold',
-        fontSize=18,
-        textColor=colors.black,
-        alignment=TA_CENTER,
-        spaceAfter=6
-    )
-    
-    subtitle_style = ParagraphStyle(
-        'Subtitle',
-        fontName='Helvetica',
-        fontSize=10,
-        textColor=colors.grey,
-        alignment=TA_CENTER,
-        spaceAfter=12
-    )
-    
-    normal_bold = ParagraphStyle(
-        'NormalBold',
-        fontName='Helvetica-Bold',
-        fontSize=9,
-        textColor=colors.black
-    )
-    
-    # Logo (menor para economizar espaço)
+    # =====  CABEÇALHO =====
+    # Logo centralizado
     try:
         logo_url = 'https://customer-assets.emergentagent.com/job_6a1d4806-8932-4f80-b5f2-32162d8861f2/artifacts/p3cmz4m7_empresa%20%27Tecno%20Dias%27.jpg'
         logo_data = urlopen(logo_url).read()
         logo_img = Image.open(BytesIO(logo_data))
         logo_width, logo_height = logo_img.size
         aspect = logo_height / logo_width
-        logo = RLImage(BytesIO(logo_data), width=1.2*inch, height=1.2*inch*aspect)
-        story.append(logo)
-        story.append(Spacer(1, 0.1*inch))
+        logo = RLImage(BytesIO(logo_data), width=1*inch, height=1*inch*aspect)
+        
+        logo_table = Table([[logo]], colWidths=[7*inch])
+        logo_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(logo_table)
+        story.append(Spacer(1, 0.05*inch))
     except:
         pass
     
-    # Título
-    story.append(Paragraph("ORÇAMENTO", title_style))
-    story.append(Paragraph(f"Nº {id_orcamento} - Data: {orcamento['data']}", subtitle_style))
+    # Dados da empresa centralizados
+    empresa_style = ParagraphStyle(
+        'Empresa',
+        fontName='Helvetica',
+        fontSize=8,
+        textColor=colors.black,
+        alignment=TA_CENTER,
+        leading=10
+    )
     
-    # Dados do cliente (compacto)
-    client_data = [
-        ['<b>Cliente:</b>', orcamento['cliente']['nome'], '<b>Contato:</b>', orcamento['cliente']['contato']],
-        ['<b>Endereço:</b>', Paragraph(orcamento['cliente']['endereco'], styles['Normal']), '', '']
+    empresa_info = f"CNPJ: {EMPRESA_CNPJ} | E-mail: {EMPRESA_EMAIL}<br/>" \
+                   f"{EMPRESA_ENDERECO} | WhatsApp: {EMPRESA_WHATSAPP}"
+    story.append(Paragraph(empresa_info, empresa_style))
+    story.append(Spacer(1, 0.1*inch))
+    
+    # Título ORÇAMENTO TECNO DIAS
+    title_style = ParagraphStyle(
+        'Title',
+        fontName='Helvetica-Bold',
+        fontSize=16,
+        textColor=colors.black,
+        alignment=TA_CENTER,
+        spaceAfter=4
+    )
+    story.append(Paragraph("ORÇAMENTO TECNO DIAS", title_style))
+    story.append(Spacer(1, 0.1*inch))
+    
+    # ===== BLOCO COM DADOS =====
+    info_style = ParagraphStyle('Info', fontName='Helvetica', fontSize=9, leading=11)
+    
+    # Número e data
+    info_data = [
+        ['<b>Número do Orçamento:</b>', id_orcamento, '<b>Data de Emissão:</b>', orcamento['data']]
     ]
-    
-    client_table = Table(client_data, colWidths=[1*inch, 2.3*inch, 0.9*inch, 2*inch])
-    client_table.setStyle(TableStyle([
+    info_table = Table(info_data, colWidths=[1.5*inch, 1.8*inch, 1.5*inch, 1.2*inch])
+    info_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Dados do cliente
+    cliente_data = [
+        ['<b>Cliente:</b>', orcamento['cliente']['nome']],
+        ['<b>Endereço:</b>', orcamento['cliente']['endereco']],
+        ['<b>Telefone:</b>', orcamento['cliente']['contato']],
+    ]
+    cliente_table = Table(cliente_data, colWidths=[1*inch, 5*inch])
+    cliente_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('SPAN', (1, 1), (3, 1)),  # Endereço ocupa 3 colunas
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
         ('TOPPADDING', (0, 0), (-1, -1), 2),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]))
-    story.append(client_table)
-    story.append(Spacer(1, 0.15*inch))
+    story.append(cliente_table)
+    story.append(Spacer(1, 0.1*inch))
     
-    # Tabela de itens (compacta)
-    items_data = [['Item', 'Qtd', 'Preço Un.', 'Total']]
+    # Descrição do serviço (centralizada)
+    if orcamento.get('descricao_servico'):
+        desc_style = ParagraphStyle(
+            'Descricao',
+            fontName='Helvetica',
+            fontSize=9,
+            textColor=colors.black,
+            alignment=TA_CENTER,
+            leading=11
+        )
+        story.append(Paragraph(f"<b>Descrição do Serviço:</b> {orcamento['descricao_servico']}", desc_style))
+        story.append(Spacer(1, 0.1*inch))
+    
+    # ===== TABELA DE MATERIAIS =====
+    story.append(Paragraph("<b>MATERIAIS</b>", ParagraphStyle('TableTitle', fontName='Helvetica-Bold', fontSize=10, leading=12)))
+    story.append(Spacer(1, 0.05*inch))
+    
+    materials_data = [['Quantidade', 'Descrição', 'Valor Unitário', 'Total']]
     for item in orcamento['items']:
-        items_data.append([
-            Paragraph(item['nome'], ParagraphStyle('ItemName', fontName='Helvetica', fontSize=8)),
+        materials_data.append([
             str(item['quantidade']),
+            item['nome'],
             f"R$ {item['preco_unitario']:.2f}",
             f"R$ {item['total_item']:.2f}"
         ])
     
-    items_table = Table(items_data, colWidths=[3.3*inch, 0.5*inch, 1*inch, 1*inch])
-    items_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#333333')),
+    materials_table = Table(materials_data, colWidths=[0.8*inch, 3.2*inch, 1*inch, 1*inch])
+    materials_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a4a4a')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 9),
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
         ('TOPPADDING', (0, 0), (-1, -1), 4),
@@ -567,82 +602,98 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
         ('LEFTPADDING', (0, 0), (-1, -1), 4),
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ]))
-    story.append(items_table)
+    story.append(materials_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # Totais (compacto e alinhado à direita)
-    totals_data = []
-    totals_data.append(['Subtotal Itens:', f"R$ {orcamento['total_sem_desconto']:.2f}"])
+    # ===== TABELA DE MÃO DE OBRA =====
+    if orcamento.get('mao_de_obra', 0) > 0:
+        story.append(Paragraph("<b>MÃO DE OBRA</b>", ParagraphStyle('TableTitle', fontName='Helvetica-Bold', fontSize=10, leading=12)))
+        story.append(Spacer(1, 0.05*inch))
+        
+        mao_obra_data = [
+            ['Descrição', 'Valor'],
+            ['Mão de Obra', f"R$ {orcamento['mao_de_obra']:.2f}"]
+        ]
+        
+        mao_obra_table = Table(mao_obra_data, colWidths=[5*inch, 1*inch])
+        mao_obra_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a4a4a')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        story.append(mao_obra_table)
+        story.append(Spacer(1, 0.1*inch))
+    
+    # ===== RESUMO GERAL =====
+    resumo_data = []
+    resumo_data.append(['Subtotal Materiais:', f"R$ {orcamento['total_sem_desconto']:.2f}"])
     
     if orcamento.get('mao_de_obra', 0) > 0:
-        totals_data.append(['Mão de Obra:', f"R$ {orcamento['mao_de_obra']:.2f}"])
+        resumo_data.append(['Subtotal Mão de Obra:', f"R$ {orcamento['mao_de_obra']:.2f}"])
     
     if orcamento.get('desconto_aplicado', 0) > 0:
-        totals_data.append(['Desconto:', f"- R$ {orcamento['desconto_aplicado']:.2f}"])
+        resumo_data.append(['Desconto:', f"- R$ {orcamento['desconto_aplicado']:.2f}"])
     
-    totals_data.append(['<b>TOTAL:</b>', f"<b>R$ {orcamento['total_final']:.2f}</b>"])
+    # Total em AZUL, NEGRITO e MAIOR
+    total_style_text = f'<font color="#0066cc" size="14"><b>R$ {orcamento["total_final"]:.2f}</b></font>'
+    resumo_data.append(['<b>TOTAL:</b>', total_style_text])
     
-    totals_table = Table(totals_data, colWidths=[4.9*inch, 0.9*inch])
-    totals_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+    resumo_table = Table(resumo_data, colWidths=[5*inch, 1*inch])
+    resumo_table.setStyle(TableStyle([
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
         ('FONTNAME', (0, 0), (-1, -2), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -2), 8),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, -1), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 2),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 0), (-1, -2), 9),
+        ('FONTNAME', (0, -1), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, -1), (0, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LINEABOVE', (0, -1), (-1, -1), 1.5, colors.black),
     ]))
-    story.append(totals_table)
-    story.append(Spacer(1, 0.15*inch))
-    
-    # Dados PIX (SEM QR CODE - apenas texto limpo)
-    pix_info = ParagraphStyle(
-        'PixInfo',
-        fontName='Helvetica',
-        fontSize=8,
-        textColor=colors.black,
-        leading=10
-    )
-    
-    pix_text = f"<b>PAGAMENTO VIA PIX:</b><br/>" \
-               f"Chave PIX: 586915070001-19<br/>" \
-               f"Beneficiário: Ygor Felipe Dias | Cidade: São Carlos<br/>" \
-               f"Valor: R$ {orcamento['total_final']:.2f}"
-    
-    pix_box = Table([[Paragraph(pix_text, pix_info)]], colWidths=[5.8*inch])
-    pix_box.setStyle(TableStyle([
-        ('BOX', (0, 0), (-1, -1), 1, colors.grey),
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9f9f9')),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-    ]))
-    story.append(pix_box)
+    story.append(resumo_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # Observações (compactas)
-    obs_style = ParagraphStyle(
-        'Obs',
-        fontName='Helvetica',
-        fontSize=7,
-        textColor=colors.grey,
-        leading=9
-    )
+    # ===== FORMA DE PAGAMENTO =====
+    pagamento_style = ParagraphStyle('Pagamento', fontName='Helvetica', fontSize=9, leading=11)
+    forma_pagamento = orcamento.get('forma_pagamento', 'Entrada + Parcelamento')
+    story.append(Paragraph(f"<b>Forma de Pagamento:</b> {forma_pagamento}", pagamento_style))
+    story.append(Spacer(1, 0.05*inch))
     
-    obs_text = "<b>OBSERVAÇÕES:</b> " \
-               "Validade: 30 dias | Garantia: 90 dias | " \
-               "Preços sujeitos a alteração | Atendimento rápido | Suporte pós-venda"
+    # PIX (somente texto, sem QR Code)
+    story.append(Paragraph(f"<b>PIX:</b> Chave: 586915070001-19 | Beneficiário: Ygor Felipe Dias | Valor: R$ {orcamento['total_final']:.2f}", pagamento_style))
+    story.append(Spacer(1, 0.1*inch))
+    
+    # ===== PRAZO DE EXECUÇÃO =====
+    prazo_execucao = orcamento.get('prazo_execucao', '15 dias')
+    story.append(Paragraph(f"<b>Prazo de Execução:</b> {prazo_execucao}", pagamento_style))
+    story.append(Spacer(1, 0.1*inch))
+    
+    # ===== OBSERVAÇÕES FINAIS =====
+    obs_style = ParagraphStyle('Obs', fontName='Helvetica', fontSize=8, textColor=colors.grey, leading=10)
+    
+    obs_text = "<b>OBSERVAÇÕES:</b> Validade de 30 dias. Garantia de 90 dias. " \
+               "Preços sujeitos a alteração conforme disponibilidade de materiais. "
     
     if orcamento.get('observacoes'):
-        # Limitar observações customizadas a 200 caracteres para caber na página
-        custom_obs = orcamento['observacoes'][:200]
-        if len(orcamento['observacoes']) > 200:
-            custom_obs += "..."
-        obs_text += "<br/>" + custom_obs
+        obs_text += orcamento['observacoes'][:150]
+        if len(orcamento['observacoes']) > 150:
+            obs_text += "..."
     
     story.append(Paragraph(obs_text, obs_style))
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Agradecimento
+    agradecimento_style = ParagraphStyle('Agradecimento', fontName='Helvetica-Bold', fontSize=9, alignment=TA_CENTER, leading=11)
+    story.append(Paragraph("Obrigado pela preferência! Atendimento rápido e suporte pós-venda garantidos.", agradecimento_style))
     
     # Construir PDF
     doc.build(story)
