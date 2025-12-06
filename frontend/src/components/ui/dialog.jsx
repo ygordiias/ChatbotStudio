@@ -8,7 +8,22 @@ const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
 
-const DialogPortal = DialogPrimitive.Portal
+const DialogPortal = ({ children, ...props }) => {
+  const [mounted, setMounted] = React.useState(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  
+  if (!mounted) return null;
+  
+  return (
+    <DialogPrimitive.Portal container={document.getElementById('portal-root')} {...props}>
+      {children}
+    </DialogPrimitive.Portal>
+  );
+}
 
 const DialogClose = DialogPrimitive.Close
 
