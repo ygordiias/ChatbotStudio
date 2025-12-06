@@ -451,12 +451,18 @@ async def get_dashboard_charts(current_user: User = Depends(get_current_user)):
         items_mais_vendidos=items_mais_vendidos
     )
 
-# ===== PDF GENERATION (CLEAN & PROFESSIONAL - 1 PAGE A4) =====
+# ===== PDF GENERATION - LAYOUT OBRIGATÓRIO TECNO DIAS =====
 @api_router.get("/orcamentos/{id_orcamento}/pdf")
 async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_current_user)):
     orcamento = await db.orcamentos.find_one({"id_orcamento": id_orcamento}, {"_id": 0})
     if not orcamento:
         raise HTTPException(status_code=404, detail="Orçamento não encontrado")
+    
+    # Dados da empresa (conforme modelo)
+    EMPRESA_CNPJ = "45.892.510/0001-88"
+    EMPRESA_EMAIL = "tecnodias25@outlook.com"
+    EMPRESA_ENDERECO = "São Carlos - SP"
+    EMPRESA_WHATSAPP = "(16) 99999-9999"
     
     buffer = BytesIO()
     # Margens otimizadas para caber tudo em 1 página
