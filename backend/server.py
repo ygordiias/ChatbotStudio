@@ -697,28 +697,47 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(pagamento_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # ===== PRAZO DE EXECUÇÃO =====
+    # ===== PRAZO DE EXECUÇÃO (SEM HTML) =====
     prazo_execucao = orcamento.get('prazo_execucao', '15 dias')
-    story.append(Paragraph(f"<b>Prazo de Execução:</b> {prazo_execucao}", pagamento_style))
+    prazo_data = [['Prazo de Execução:', prazo_execucao]]
+    prazo_table = Table(prazo_data, colWidths=[1.5*inch, 4.5*inch])
+    prazo_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, 0), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+    ]))
+    story.append(prazo_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # ===== OBSERVAÇÕES FINAIS =====
-    obs_style = ParagraphStyle('Obs', fontName='Helvetica', fontSize=8, textColor=colors.grey, leading=10)
-    
-    obs_text = "<b>OBSERVAÇÕES:</b> Validade de 30 dias. Garantia de 90 dias. " \
-               "Preços sujeitos a alteração conforme disponibilidade de materiais. "
+    # ===== OBSERVAÇÕES FINAIS (SEM HTML) =====
+    obs_text = "OBSERVAÇÕES: Validade de 30 dias. Garantia de 90 dias. " \
+               "Preços sujeitos a alteração conforme disponibilidade de materiais."
     
     if orcamento.get('observacoes'):
-        obs_text += orcamento['observacoes'][:150]
+        obs_custom = orcamento['observacoes'][:150]
         if len(orcamento['observacoes']) > 150:
-            obs_text += "..."
+            obs_custom += "..."
+        obs_text += " " + obs_custom
     
-    story.append(Paragraph(obs_text, obs_style))
+    obs_data = [[obs_text]]
+    obs_table = Table(obs_data, colWidths=[6*inch])
+    obs_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.grey),
+    ]))
+    story.append(obs_table)
     story.append(Spacer(1, 0.08*inch))
     
-    # Agradecimento
-    agradecimento_style = ParagraphStyle('Agradecimento', fontName='Helvetica-Bold', fontSize=9, alignment=TA_CENTER, leading=11)
-    story.append(Paragraph("Obrigado pela preferência! Atendimento rápido e suporte pós-venda garantidos.", agradecimento_style))
+    # Agradecimento (SEM HTML)
+    agradecimento_data = [["Obrigado pela preferência! Atendimento rápido e suporte pós-venda garantidos."]]
+    agradecimento_table = Table(agradecimento_data, colWidths=[6*inch])
+    agradecimento_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+    ]))
+    story.append(agradecimento_table)
     
     # Construir PDF
     doc.build(story)
