@@ -512,16 +512,16 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(empresa_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # Título ORÇAMENTO TECNO DIAS
-    title_style = ParagraphStyle(
-        'Title',
-        fontName='Helvetica-Bold',
-        fontSize=16,
-        textColor=colors.black,
-        alignment=TA_CENTER,
-        spaceAfter=4
-    )
-    story.append(Paragraph("ORÇAMENTO TECNO DIAS", title_style))
+    # Título ORÇAMENTO TECNO DIAS (SEM HTML)
+    title_data = [["ORÇAMENTO TECNO DIAS"]]
+    title_table = Table(title_data, colWidths=[7*inch])
+    title_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 16),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+    ]))
+    story.append(title_table)
     story.append(Spacer(1, 0.1*inch))
     
     # ===== BLOCO COM DADOS =====
