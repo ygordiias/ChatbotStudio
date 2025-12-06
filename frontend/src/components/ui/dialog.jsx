@@ -19,7 +19,7 @@ const DialogPortal = ({ children, ...props }) => {
   if (!mounted) return null;
   
   return (
-    <DialogPrimitive.Portal container={document.getElementById('portal-root')} {...props}>
+    <DialogPrimitive.Portal {...props}>
       {children}
     </DialogPrimitive.Portal>
   );
