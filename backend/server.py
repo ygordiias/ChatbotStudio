@@ -331,13 +331,15 @@ async def update_orcamento(id_orcamento: str, orc_update: OrcamentoUpdate, curre
     
     update_data = {k: v for k, v in orc_update.model_dump().items() if v is not None}
     
-    # Recalculate totals if items or desconto changed
-    if 'items' in update_data or 'desconto_aplicado' in update_data:
+    # Recalculate totals if items, mao_de_obra or desconto changed
+    if 'items' in update_data or 'mao_de_obra' in update_data or 'desconto_aplicado' in update_data:
         items = update_data.get('items', existing_orc['items'])
+        mao_de_obra = update_data.get('mao_de_obra', existing_orc.get('mao_de_obra', 0.0))
         desconto = update_data.get('desconto_aplicado', existing_orc['desconto_aplicado'])
         
         total_sem_desconto = sum(item['total_item'] if isinstance(item, dict) else item.total_item for item in items)
-        total_final = total_sem_desconto - desconto
+        total_com_mao_obra = total_sem_desconto + mao_de_obra
+        total_final = total_com_mao_obra - desconto
         
         update_data['total_sem_desconto'] = round(total_sem_desconto, 2)
         update_data['total_final'] = round(total_final, 2)
