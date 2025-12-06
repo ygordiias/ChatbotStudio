@@ -574,8 +574,14 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
         story.append(desc_table)
         story.append(Spacer(1, 0.1*inch))
     
-    # ===== TABELA DE MATERIAIS =====
-    story.append(Paragraph("<b>MATERIAIS</b>", ParagraphStyle('TableTitle', fontName='Helvetica-Bold', fontSize=10, leading=12)))
+    # ===== TABELA DE MATERIAIS (SEM HTML) =====
+    title_materiais = [["MATERIAIS"]]
+    title_mat_table = Table(title_materiais, colWidths=[6*inch])
+    title_mat_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(title_mat_table)
     story.append(Spacer(1, 0.05*inch))
     
     materials_data = [['Quantidade', 'Descrição', 'Valor Unitário', 'Total']]
