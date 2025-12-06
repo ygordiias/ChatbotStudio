@@ -121,6 +121,9 @@ class OrcamentoCreate(BaseModel):
     items: List[OrcamentoItem]
     mao_de_obra: float = 0.0
     desconto_aplicado: float = 0.0
+    descricao_servico: Optional[str] = ""
+    prazo_execucao: Optional[str] = "15 dias"
+    forma_pagamento: Optional[str] = "Entrada + Parcelamento"
     observacoes: Optional[str] = ""
 
 class OrcamentoUpdate(BaseModel):
