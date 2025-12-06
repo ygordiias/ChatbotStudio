@@ -614,9 +614,15 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
     story.append(materials_table)
     story.append(Spacer(1, 0.1*inch))
     
-    # ===== TABELA DE MÃO DE OBRA =====
+    # ===== TABELA DE MÃO DE OBRA (SEM HTML) =====
     if orcamento.get('mao_de_obra', 0) > 0:
-        story.append(Paragraph("<b>MÃO DE OBRA</b>", ParagraphStyle('TableTitle', fontName='Helvetica-Bold', fontSize=10, leading=12)))
+        title_mao_obra = [["MÃO DE OBRA"]]
+        title_mo_table = Table(title_mao_obra, colWidths=[6*inch])
+        title_mo_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(title_mo_table)
         story.append(Spacer(1, 0.05*inch))
         
         mao_obra_data = [
