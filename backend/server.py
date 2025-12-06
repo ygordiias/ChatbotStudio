@@ -883,6 +883,311 @@ async def generate_pdf(id_orcamento: str, current_user: User = Depends(get_curre
         headers={"Content-Disposition": f"attachment; filename=orcamento_{id_orcamento}.pdf"}
     )
 
+# ===== PDF GENERATION LAUDO - LAYOUT OBRIGATÓRIO =====
+@api_router.get("/laudos/{id_laudo}/pdf")
+async def generate_laudo_pdf(id_laudo: str, current_user: User = Depends(get_current_user)):
+    laudo = await db.laudos.find_one({"id_laudo": id_laudo}, {"_id": 0})
+    if not laudo:
+        raise HTTPException(status_code=404, detail="Laudo não encontrado")
+    
+    # Dados da empresa
+    EMPRESA_CNPJ = "58.691.507/0001-19"
+    EMPRESA_EMAIL = "tecnodiasct@hotmail.com"
+    EMPRESA_ENDERECO = "Rua José Mário Gonçalves – São Carlos – SP"
+    EMPRESA_WHATSAPP = "(16) 99740-2458"
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=A4, 
+        topMargin=0.3*inch, 
+        bottomMargin=0.3*inch,
+        leftMargin=0.5*inch,
+        rightMargin=0.5*inch
+    )
+    story = []
+    
+    # =====  CABEÇALHO =====
+    # Logo centralizado
+    try:
+        logo_url = 'https://customer-assets.emergentagent.com/job_6a1d4806-8932-4f80-b5f2-32162d8861f2/artifacts/p3cmz4m7_empresa%20%27Tecno%20Dias%27.jpg'
+        logo_data = urlopen(logo_url).read()
+        logo_img = Image.open(BytesIO(logo_data))
+        logo_width, logo_height = logo_img.size
+        aspect = logo_height / logo_width
+        logo = RLImage(BytesIO(logo_data), width=0.8*inch, height=0.8*inch*aspect)
+        
+        logo_table = Table([[logo]], colWidths=[7*inch])
+        logo_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(logo_table)
+        story.append(Spacer(1, 0.05*inch))
+    except:
+        pass
+    
+    # TECNO DIAS - Soluções em Automação
+    empresa_title = [["TECNO DIAS – Soluções em Automação"]]
+    empresa_title_table = Table(empresa_title, colWidths=[7*inch])
+    empresa_title_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(empresa_title_table)
+    
+    # Dados empresa
+    empresa_info = [
+        [f"CNPJ: {EMPRESA_CNPJ}"],
+        [f"E-mail: {EMPRESA_EMAIL}"],
+        [f"Endereço: {EMPRESA_ENDERECO}"],
+        [f"Whatsapp: {EMPRESA_WHATSAPP}"]
+    ]
+    empresa_table = Table(empresa_info, colWidths=[7*inch])
+    empresa_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+    ]))
+    story.append(empresa_table)
+    story.append(Spacer(1, 0.1*inch))
+    
+    # Título LAUDO TÉCNICO
+    title_laudo = [["LAUDO TÉCNICO"]]
+    title_table = Table(title_laudo, colWidths=[7*inch])
+    title_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 14),
+    ]))
+    story.append(title_table)
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Número e Data
+    info_data = [
+        ['Número do Laudo:', laudo['numero_laudo'], 'Data de Emissão:', laudo['data']]
+    ]
+    info_table = Table(info_data, colWidths=[1.3*inch, 1.7*inch, 1.5*inch, 1.5*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Dados do Cliente
+    cliente_title = [["Dados do Cliente"]]
+    cliente_title_table = Table(cliente_title, colWidths=[6*inch])
+    cliente_title_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(cliente_title_table)
+    
+    cliente_data = [
+        ['Cliente:', laudo['cliente']['nome']],
+        ['Endereço:', laudo['cliente']['endereco']],
+        ['Responsável / Telefone:', laudo['cliente']['contato']],
+    ]
+    cliente_table = Table(cliente_data, colWidths=[1.5*inch, 4.5*inch])
+    cliente_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 2),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+    ]))
+    story.append(cliente_table)
+    story.append(Spacer(1, 0.1*inch))
+    
+    # Descrição do Problema
+    desc_title = [["Descrição do Problema Identificado"]]
+    desc_title_table = Table(desc_title, colWidths=[6*inch])
+    desc_title_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(desc_title_table)
+    
+    desc_text = [[laudo['descricao_problema']]]
+    desc_table = Table(desc_text, colWidths=[6*inch])
+    desc_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    story.append(desc_table)
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Testes Realizados (se houver)
+    if laudo.get('testes_realizados'):
+        testes_title = [["Testes Realizados"]]
+        testes_title_table = Table(testes_title, colWidths=[6*inch])
+        testes_title_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(testes_title_table)
+        
+        testes_text = [[laudo['testes_realizados']]]
+        testes_table = Table(testes_text, colWidths=[6*inch])
+        testes_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ]))
+        story.append(testes_table)
+        story.append(Spacer(1, 0.08*inch))
+    
+    # Conclusão Técnica
+    if laudo.get('conclusao_tecnica'):
+        conclusao_title = [["Conclusão Técnica"]]
+        conclusao_title_table = Table(conclusao_title, colWidths=[6*inch])
+        conclusao_title_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(conclusao_title_table)
+        
+        conclusao_text = [[laudo['conclusao_tecnica']]]
+        conclusao_table = Table(conclusao_text, colWidths=[6*inch])
+        conclusao_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ]))
+        story.append(conclusao_table)
+        story.append(Spacer(1, 0.08*inch))
+    
+    # Fotos da Avaria
+    if laudo.get('fotos') and len(laudo['fotos']) > 0:
+        fotos_title = [["Fotos da Avaria"]]
+        fotos_title_table = Table(fotos_title, colWidths=[6*inch])
+        fotos_title_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(fotos_title_table)
+        story.append(Spacer(1, 0.05*inch))
+        
+        for idx, foto in enumerate(laudo['fotos'][:4], 1):  # Máximo 4 fotos
+            try:
+                # Tentar carregar imagem da URL
+                foto_data = urlopen(foto['url']).read()
+                foto_img = Image.open(BytesIO(foto_data))
+                foto_width, foto_height = foto_img.size
+                aspect = foto_height / foto_width
+                
+                # Redimensionar para caber no PDF
+                max_width = 2.5*inch
+                max_height = 2*inch
+                if aspect > (max_height / max_width):
+                    img_height = max_height
+                    img_width = img_height / aspect
+                else:
+                    img_width = max_width
+                    img_height = img_width * aspect
+                
+                foto_rl = RLImage(BytesIO(foto_data), width=img_width, height=img_height)
+                
+                legenda = foto.get('legenda', f"Foto {idx}")
+                foto_row = [[foto_rl, legenda]]
+                foto_table = Table(foto_row, colWidths=[3*inch, 3*inch])
+                foto_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('FONTNAME', (1, 0), (1, 0), 'Helvetica'),
+                    ('FONTSIZE', (1, 0), (1, 0), 7),
+                ]))
+                story.append(foto_table)
+                story.append(Spacer(1, 0.05*inch))
+            except:
+                # Se falhar ao carregar, apenas mostrar legenda
+                legenda_data = [[f"Foto {idx}: {foto.get('legenda', 'Imagem não disponível')}"]]
+                legenda_table = Table(legenda_data, colWidths=[6*inch])
+                legenda_table.setStyle(TableStyle([
+                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 7),
+                ]))
+                story.append(legenda_table)
+    
+    # Serviço Recomendado
+    if laudo.get('servico_recomendado'):
+        servico_title = [["Serviço Recomendado"]]
+        servico_title_table = Table(servico_title, colWidths=[6*inch])
+        servico_title_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(servico_title_table)
+        
+        servico_text = [[laudo['servico_recomendado']]]
+        servico_table = Table(servico_text, colWidths=[6*inch])
+        servico_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ]))
+        story.append(servico_table)
+        story.append(Spacer(1, 0.1*inch))
+    
+    # Assinaturas
+    assinatura_title = [["Assinaturas"]]
+    assinatura_title_table = Table(assinatura_title, colWidths=[6*inch])
+    assinatura_title_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    story.append(assinatura_title_table)
+    
+    assinatura_data = [
+        ['Local: ___________________________', 'Data: ___ / ___ / _____'],
+        ['', ''],
+        ['Assinatura do Técnico Responsável', 'Assinatura do Cliente / Responsável'],
+        ['Ygor Felipe Dias', ''],
+        ['TECNO DIAS – Automação e Segurança', 'Nome Legível: _________________________']
+    ]
+    assinatura_table = Table(assinatura_data, colWidths=[3*inch, 3*inch])
+    assinatura_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LINEABOVE', (0, 2), (-1, 2), 0.5, colors.black),
+    ]))
+    story.append(assinatura_table)
+    story.append(Spacer(1, 0.08*inch))
+    
+    # Observações
+    if laudo.get('observacoes'):
+        obs_title = [["Observações"]]
+        obs_title_table = Table(obs_title, colWidths=[6*inch])
+        obs_title_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ]))
+        story.append(obs_title_table)
+        
+        obs_text = [[laudo['observacoes']]]
+        obs_table = Table(obs_text, colWidths=[6*inch])
+        obs_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 7),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.grey),
+        ]))
+        story.append(obs_table)
+    
+    # Construir PDF
+    doc.build(story)
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=laudo_{laudo['numero_laudo']}.pdf"}
+    )
+
 app.include_router(api_router)
 
 app.add_middleware(
