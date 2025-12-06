@@ -30,9 +30,10 @@ export default function OrcamentoForm() {
     desconto_aplicado: 0,
     observacoes: ''
   });
-  const [itemPopoverOpen, setItemPopoverOpen] = useState(false);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [selectedItemForAdd, setSelectedItemForAdd] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [itemSearch, setItemSearch] = useState('');
 
   useEffect(() => {
     fetchItems();
