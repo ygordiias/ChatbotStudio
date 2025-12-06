@@ -91,7 +91,8 @@ export default function OrcamentoForm() {
     
     setSelectedItemForAdd(null);
     setQuantity(1);
-    setItemPopoverOpen(false);
+    setItemSearch('');
+    setItemDialogOpen(false);
   };
 
   const handleRemoveItem = (index) => {
