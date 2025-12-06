@@ -111,11 +111,12 @@ export default function OrcamentoForm() {
 
   const calculateTotals = () => {
     const subtotal = formData.items.reduce((sum, item) => sum + item.total_item, 0);
-    const total = subtotal - formData.desconto_aplicado;
+    const subtotalComMaoObra = subtotal + (formData.mao_de_obra || 0);
+    const total = subtotalComMaoObra - formData.desconto_aplicado;
     
     // Calculate margin
     let totalCusto = 0;
-    let totalVenda = subtotal;
+    let totalVenda = subtotalComMaoObra;
     
     formData.items.forEach(item => {
       const itemData = allItems.find(i => i.id === item.item_id);
@@ -127,7 +128,7 @@ export default function OrcamentoForm() {
     const margem = totalVenda > 0 ? ((totalVenda - totalCusto) / totalVenda * 100) : 0;
     const margemComDesconto = total > 0 ? ((total - totalCusto) / total * 100) : 0;
     
-    return { subtotal, total, margem, margemComDesconto };
+    return { subtotal, subtotalComMaoObra, total, margem, margemComDesconto };
   };
 
   const { subtotal, total, margem, margemComDesconto } = calculateTotals();
