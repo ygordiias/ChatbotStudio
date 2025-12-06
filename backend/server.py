@@ -140,6 +140,44 @@ class OrcamentoUpdate(BaseModel):
 class StatusUpdate(BaseModel):
     status: str
 
+# ===== LAUDO MODELS =====
+class LaudoFoto(BaseModel):
+    url: str
+    legenda: str = ""
+
+class Laudo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id_laudo: str
+    numero_laudo: str
+    cliente: ClienteInfo
+    data: str
+    descricao_problema: str
+    testes_realizados: str = ""
+    conclusao_tecnica: str = ""
+    servico_recomendado: str = ""
+    fotos: List[LaudoFoto] = []
+    assinatura_tecnico: str = "Ygor Felipe Dias\nTECNO DIAS – Automação e Segurança"
+    observacoes: str = ""
+    created_at: str
+
+class LaudoCreate(BaseModel):
+    cliente: ClienteInfo
+    descricao_problema: str
+    testes_realizados: str = ""
+    conclusao_tecnica: str = ""
+    servico_recomendado: str = ""
+    fotos: List[LaudoFoto] = []
+    observacoes: str = ""
+
+class LaudoUpdate(BaseModel):
+    cliente: Optional[ClienteInfo] = None
+    descricao_problema: Optional[str] = None
+    testes_realizados: Optional[str] = None
+    conclusao_tecnica: Optional[str] = None
+    servico_recomendado: Optional[str] = None
+    fotos: Optional[List[LaudoFoto]] = None
+    observacoes: Optional[str] = None
+
 class DashboardStats(BaseModel):
     total_orcamentos: int
     valor_total_vendido: float
