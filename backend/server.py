@@ -411,6 +411,102 @@ async def update_orcamento_status(id_orcamento: str, status_update: StatusUpdate
     
     return {"message": "Status atualizado com sucesso"}
 
+# ===== LAUDOS ROUTES =====
+@api_router.get("/laudos", response_model=List[Laudo])
+async def get_laudos(search: Optional[str] = None, current_user: User = Depends(get_current_user)):
+    query = {}
+    if search:
+        query['cliente.nome'] = {"$regex": search, "$options": "i"}
+    
+    laudos = await db.laudos.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return laudos
+
+@api_router.get("/laudos/{id_laudo}", response_model=Laudo)
+async def get_laudo(id_laudo: str, current_user: User = Depends(get_current_user)):
+    laudo = await db.laudos.find_one({"id_laudo": id_laudo}, {"_id": 0})
+    if not laudo:
+        raise HTTPException(status_code=404, detail="Laudo não encontrado")
+    return Laudo(**laudo)
+
+@api_router.post("/laudos", response_model=Laudo)
+async def create_laudo(laudo_data: LaudoCreate, current_user: User = Depends(get_current_user)):
+    from datetime import datetime
+    import uuid
+    
+    now = datetime.now(timezone.utc)
+    ano = now.year
+    
+    # Get next number for this year
+    last_laudo = await db.laudos.find_one(
+        {"numero_laudo": {"$regex": f"^LAU-{ano}-"}},
+        {"_id": 0, "numero_laudo": 1},
+        sort=[("created_at", -1)]
+    )
+    
+    if last_laudo:
+        last_num = int(last_laudo['numero_laudo'].split('-')[-1])
+        new_num = last_num + 1
+    else:
+        new_num = 1
+    
+    numero_laudo = f"LAU-{ano}-{new_num:03d}"
+    id_laudo = str(uuid.uuid4())
+    
+    laudo = Laudo(
+        id_laudo=id_laudo,
+        numero_laudo=numero_laudo,
+        cliente=laudo_data.cliente,
+        data=now.strftime("%d/%m/%Y"),
+        descricao_problema=laudo_data.descricao_problema,
+        testes_realizados=laudo_data.testes_realizados or "",
+        conclusao_tecnica=laudo_data.conclusao_tecnica or "",
+        servico_recomendado=laudo_data.servico_recomendado or "",
+        fotos=laudo_data.fotos,
+        assinatura_tecnico="Ygor Felipe Dias\nTECNO DIAS – Automação e Segurança",
+        observacoes=laudo_data.observacoes or "",
+        created_at=now.isoformat()
+    )
+    
+    await db.laudos.insert_one(laudo.model_dump())
+    return laudo
+
+@api_router.put("/laudos/{id_laudo}", response_model=Laudo)
+async def update_laudo(id_laudo: str, laudo_update: LaudoUpdate, current_user: User = Depends(get_current_user)):
+    existing_laudo = await db.laudos.find_one({"id_laudo": id_laudo}, {"_id": 0})
+    if not existing_laudo:
+        raise HTTPException(status_code=404, detail="Laudo não encontrado")
+    
+    update_data = {k: v for k, v in laudo_update.model_dump().items() if v is not None}
+    
+    await db.laudos.update_one({"id_laudo": id_laudo}, {"$set": update_data})
+    
+    updated_laudo = await db.laudos.find_one({"id_laudo": id_laudo}, {"_id": 0})
+    return Laudo(**updated_laudo)
+
+@api_router.delete("/laudos/{id_laudo}")
+async def delete_laudo(id_laudo: str, current_user: User = Depends(get_current_user)):
+    result = await db.laudos.delete_one({"id_laudo": id_laudo})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Laudo não encontrado")
+    return {"message": "Laudo excluído com sucesso"}
+
+# Modelos de descrição padrão para laudos
+@api_router.get("/laudos/modelos/descricoes")
+async def get_modelos_descricoes(current_user: User = Depends(get_current_user)):
+    modelos = [
+        "Motor queimado por descarga atmosférica (raio)",
+        "Placa de comando danificada por sobretensão",
+        "Fechadura eletromagnética sem retenção",
+        "Sensor de presença com defeito no relé",
+        "Central de alarme com bateria vencida",
+        "Cabo de alimentação rompido por desgaste",
+        "Controle remoto sem sinal - necessário reprogramação",
+        "Fotocélula obstruída e sem resposta",
+        "Transformador queimado por pico de tensão",
+        "Aterramento inadequado causando interferência"
+    ]
+    return {"modelos": modelos}
+
 # ===== DASHBOARD ROUTES =====
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
