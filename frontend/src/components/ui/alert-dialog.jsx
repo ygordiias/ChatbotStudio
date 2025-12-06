@@ -19,7 +19,7 @@ const AlertDialogPortal = ({ children, ...props }) => {
   if (!mounted) return null;
   
   return (
-    <AlertDialogPrimitive.Portal container={document.getElementById('portal-root')} {...props}>
+    <AlertDialogPrimitive.Portal {...props}>
       {children}
     </AlertDialogPrimitive.Portal>
   );
